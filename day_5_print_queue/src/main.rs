@@ -1,12 +1,32 @@
 use std::collections::HashMap;
 
 fn main() {
-    solve_puzzle1();
-    // solve_puzzle2();
+    // solve_puzzle1();
+    solve_puzzle2();
 }
 
 #[allow(dead_code)]
-fn solve_puzzle2() {}
+fn solve_puzzle2() {
+    let (page_ordering_rules, mut page_number_updates) =
+        read_page_ordering_rules_and_page_number_updates();
+
+    let mut result = 0;
+    for update in page_number_updates.iter_mut() {
+        if !is_correctly_ordered_page_number_update(update, &page_ordering_rules) {
+            order_page_numbers(update, &page_ordering_rules);
+            result += update[update.len() / 2];
+        }
+    }
+
+    println!("{result}");
+}
+
+fn order_page_numbers(
+    page_number_update: &mut [i32],
+    page_ordering_rules: &HashMap<i32, Vec<i32>>,
+) {
+    todo!()
+}
 
 #[allow(dead_code)]
 fn solve_puzzle1() {
