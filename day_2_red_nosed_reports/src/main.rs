@@ -22,7 +22,7 @@ fn solve_puzzle2() {
         let levels = trimmed_line
             .split_whitespace()
             .map(|l| l.parse::<i32>().unwrap())
-            .collect();
+            .collect::<Vec<i32>>();
 
         if is_safe_report(&levels, -1) {
             safe_reports_count += 1;
@@ -58,7 +58,7 @@ fn solve_puzzle1() {
         let levels = trimmed_line
             .split_whitespace()
             .map(|l| l.parse::<i32>().unwrap())
-            .collect();
+            .collect::<Vec<i32>>();
 
         if is_safe_report(&levels, -1) {
             safe_reports_count += 1;
@@ -68,7 +68,7 @@ fn solve_puzzle1() {
     println!("{safe_reports_count}");
 }
 
-fn is_safe_report(levels: &Vec<i32>, skip_level_index: i32) -> bool {
+fn is_safe_report(levels: &[i32], skip_level_index: i32) -> bool {
     let mut is_safe_report = true;
     let mut is_increasing = Option::None;
     let mut previous_level = Option::None;

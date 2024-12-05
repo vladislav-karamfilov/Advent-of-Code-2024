@@ -53,31 +53,6 @@ fn solve_puzzle1() {
     println!("{result}");
 }
 
-fn read_program_memory() -> String {
-    let mut result = String::new();
-
-    loop {
-        let mut line = String::new();
-
-        std::io::stdin()
-            .read_line(&mut line)
-            .expect("Failed to read line");
-
-        let trimmed_line = line.trim();
-        if trimmed_line.is_empty() {
-            break;
-        }
-
-        if !result.is_empty() {
-            result.push(' ');
-        }
-
-        result.push_str(trimmed_line);
-    }
-
-    result
-}
-
 fn calculate_sum_of_multiplications(text_to_process: &str) -> u32 {
     let mut result = 0;
     if text_to_process.len() < "mul(X,Y)".len() {
@@ -102,6 +77,31 @@ fn calculate_sum_of_multiplications(text_to_process: &str) -> u32 {
             .unwrap();
 
         result += x * y;
+    }
+
+    result
+}
+
+fn read_program_memory() -> String {
+    let mut result = String::new();
+
+    loop {
+        let mut line = String::new();
+
+        std::io::stdin()
+            .read_line(&mut line)
+            .expect("Failed to read line");
+
+        let trimmed_line = line.trim();
+        if trimmed_line.is_empty() {
+            break;
+        }
+
+        if !result.is_empty() {
+            result.push(' ');
+        }
+
+        result.push_str(trimmed_line);
     }
 
     result
