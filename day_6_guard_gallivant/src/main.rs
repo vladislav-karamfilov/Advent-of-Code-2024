@@ -1,21 +1,87 @@
 use std::collections::HashSet;
 
 fn main() {
-    solve_puzzle1();
+    // solve_puzzle1();
+    solve_puzzle2();
+}
+
+#[allow(dead_code)]
+fn solve_puzzle2() {
+    let mut map = read_map();
+
+    let start_row = map.iter().position(|r| r.contains(&'^')).unwrap();
+    let start_col = map[start_row].iter().position(|ch| *ch == '^').unwrap();
+    let start_position = Position {
+        row: start_row,
+        col: start_col,
+    };
+
+    let visited_positions =
+        find_visited_positions_on_the_way_out(start_position, Direction::Up, &map);
+
+    let mut count = 0;
+    for potential_obstacle_position in visited_positions.iter() {
+        map[potential_obstacle_position.row][potential_obstacle_position.col] = '#';
+
+        if detect_cycle_on_the_way_out(start_position, Direction::Up, &map) {
+            count += 1;
+        }
+
+        map[potential_obstacle_position.row][potential_obstacle_position.col] = '.';
+    }
+
+    println!("{count}");
 }
 
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let map = read_map();
 
-    let current_row = map.iter().position(|r| r.contains(&'^')).unwrap();
-    let current_col = map[current_row].iter().position(|ch| *ch == '^').unwrap();
-    let mut current_position = Position {
-        row: current_row,
-        col: current_col,
+    let start_row = map.iter().position(|r| r.contains(&'^')).unwrap();
+    let start_col = map[start_row].iter().position(|ch| *ch == '^').unwrap();
+    let start_position = Position {
+        row: start_row,
+        col: start_col,
     };
 
-    let mut current_direction = Direction::Up;
+    let visited_positions =
+        find_visited_positions_on_the_way_out(start_position, Direction::Up, &map);
+
+    println!("{}", visited_positions.len());
+}
+
+fn detect_cycle_on_the_way_out(
+    start_position: Position,
+    start_direction: Direction,
+    map: &[Vec<char>],
+) -> bool {
+    let mut current_position = start_position;
+    let mut current_direction = start_direction;
+
+    let mut visited_positions_with_direction = HashSet::new();
+    visited_positions_with_direction.insert((current_position, current_direction));
+
+    while let Some((next_position, next_direction)) =
+        get_next_position_and_direction(current_position, current_direction, &map)
+    {
+        if !visited_positions_with_direction.insert((next_position, next_direction)) {
+            return true;
+        }
+
+        current_position = next_position;
+        current_direction = next_direction;
+    }
+
+    false
+}
+
+fn find_visited_positions_on_the_way_out(
+    start_position: Position,
+    start_direction: Direction,
+    map: &[Vec<char>],
+) -> HashSet<Position> {
+    let mut current_position = start_position;
+    let mut current_direction = start_direction;
 
     let mut visited_positions = HashSet::new();
     visited_positions.insert(current_position);
@@ -29,7 +95,7 @@ fn solve_puzzle1() {
         current_direction = next_direction;
     }
 
-    println!("{}", visited_positions.len());
+    visited_positions
 }
 
 fn get_next_position_and_direction(
@@ -157,7 +223,7 @@ struct Position {
     col: usize,
 }
 
-#[derive(Clone, Copy)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
 enum Direction {
     Right,
     Left,
