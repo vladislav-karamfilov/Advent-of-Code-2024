@@ -57,6 +57,7 @@ fn order_page_number_update(
 
     for i in start_index..page_number_update.len() {
         page_number_update.swap(start_index, i);
+
         if order_page_number_update(page_number_update, start_index + 1, page_ordering_rules) {
             return true;
         }
