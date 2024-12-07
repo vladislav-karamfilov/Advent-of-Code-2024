@@ -35,7 +35,6 @@ fn solve_puzzle2() {
                 Ordering::Equal
             });
 
-            // order_page_number_update(update, 0, &page_ordering_rules);
             result += update[update.len() / 2];
         }
     }
