@@ -14,28 +14,21 @@ fn solve_puzzle2() {
     for update in page_number_updates.iter_mut() {
         if !is_correctly_ordered_page_number_update(update, &page_ordering_rules) {
             update.sort_by(|page_1, page_2| {
-                match page_ordering_rules.get(page_1) {
-                    Some(page_numbers_after) => {
-                        if page_numbers_after.contains(page_2) {
-                            return Ordering::Greater;
-                        }
+                if let Some(page_numbers_after) = page_ordering_rules.get(page_1) {
+                    if page_numbers_after.contains(page_2) {
+                        return Ordering::Greater;
                     }
-                    None => {}
                 }
 
-                match page_ordering_rules.get(page_2) {
-                    Some(page_numbers_after) => {
-                        if page_numbers_after.contains(page_1) {
-                            return Ordering::Less;
-                        }
+                if let Some(page_numbers_after) = page_ordering_rules.get(page_2) {
+                    if page_numbers_after.contains(page_1) {
+                        return Ordering::Less;
                     }
-                    None => {}
                 }
 
                 Ordering::Equal
             });
 
-            // order_page_number_update(update, 0, &page_ordering_rules);
             result += update[update.len() / 2];
         }
     }
@@ -63,17 +56,14 @@ fn is_correctly_ordered_page_number_update(
     page_ordering_rules: &HashMap<i32, Vec<i32>>,
 ) -> bool {
     for (index, page_number) in page_number_update.iter().enumerate() {
-        match page_ordering_rules.get(page_number) {
-            Some(page_numbers_after) => {
-                let page_numbers_before = &page_number_update[..index];
-                if page_numbers_before
-                    .iter()
-                    .any(|n| page_numbers_after.contains(n))
-                {
-                    return false;
-                }
+        if let Some(page_numbers_after) = page_ordering_rules.get(page_number) {
+            let is_incorrectly_ordered_slice = page_number_update[..index]
+                .iter()
+                .any(|n| page_numbers_after.contains(n));
+
+            if is_incorrectly_ordered_slice {
+                return false;
             }
-            None => {}
         }
     }
 
