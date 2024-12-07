@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cmp::Ordering, collections::HashMap};
 
 fn main() {
     // solve_puzzle1();
@@ -13,7 +13,29 @@ fn solve_puzzle2() {
     let mut result = 0;
     for update in page_number_updates.iter_mut() {
         if !is_correctly_ordered_page_number_update(update, &page_ordering_rules) {
-            order_page_number_update(update, 0, &page_ordering_rules);
+            update.sort_by(|page_1, page_2| {
+                match page_ordering_rules.get(page_1) {
+                    Some(page_numbers_after) => {
+                        if page_numbers_after.contains(page_2) {
+                            return Ordering::Greater;
+                        }
+                    }
+                    None => {}
+                }
+
+                match page_ordering_rules.get(page_2) {
+                    Some(page_numbers_after) => {
+                        if page_numbers_after.contains(page_1) {
+                            return Ordering::Less;
+                        }
+                    }
+                    None => {}
+                }
+
+                Ordering::Equal
+            });
+
+            // order_page_number_update(update, 0, &page_ordering_rules);
             result += update[update.len() / 2];
         }
     }
@@ -34,38 +56,6 @@ fn solve_puzzle1() {
     }
 
     println!("{result}");
-}
-
-fn order_page_number_update(
-    page_number_update: &mut [i32],
-    start_index: usize,
-    page_ordering_rules: &HashMap<i32, Vec<i32>>,
-) -> bool {
-    if start_index == page_number_update.len() {
-        return is_correctly_ordered_page_number_update(page_number_update, page_ordering_rules);
-    }
-
-    if start_index > 0
-        && start_index % 2 == 0
-        && !is_correctly_ordered_page_number_update(
-            &page_number_update[..start_index],
-            page_ordering_rules,
-        )
-    {
-        return false;
-    }
-
-    for i in start_index..page_number_update.len() {
-        page_number_update.swap(start_index, i);
-
-        if order_page_number_update(page_number_update, start_index + 1, page_ordering_rules) {
-            return true;
-        }
-
-        page_number_update.swap(start_index, i);
-    }
-
-    return false;
 }
 
 fn is_correctly_ordered_page_number_update(
