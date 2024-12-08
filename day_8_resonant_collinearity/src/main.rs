@@ -16,7 +16,7 @@ fn solve_puzzle2() {
                 antinode_coords.insert(same_freq_antenna_coords[i]);
                 antinode_coords.insert(same_freq_antenna_coords[j]);
 
-                find_antinode_coords(
+                find_antinode_coordinates(
                     same_freq_antenna_coords[i],
                     same_freq_antenna_coords[j],
                     max_row,
@@ -41,7 +41,7 @@ fn solve_puzzle1() {
     for same_freq_antenna_coords in antennas_map.values() {
         for i in 0..same_freq_antenna_coords.len() - 1 {
             for j in i + 1..same_freq_antenna_coords.len() {
-                find_antinode_coords(
+                find_antinode_coordinates(
                     same_freq_antenna_coords[i],
                     same_freq_antenna_coords[j],
                     max_row,
@@ -58,7 +58,7 @@ fn solve_puzzle1() {
     println!("{}", antinode_coords.len());
 }
 
-fn find_antinode_coords(
+fn find_antinode_coordinates(
     start_coord: Coordinate2D,
     end_coord: Coordinate2D,
     max_row: i32,
@@ -71,10 +71,10 @@ fn find_antinode_coords(
     let row_diff = end_coord.row - start_coord.row;
     let col_diff = end_coord.col - start_coord.col;
 
-    let gcd = calculate_greatest_common_divisor(row_diff.abs(), col_diff.abs());
+    let step = calculate_greatest_common_divisor(row_diff.abs(), col_diff.abs());
 
-    let step_row = row_diff / gcd;
-    let step_col = col_diff / gcd;
+    let step_row = row_diff / step;
+    let step_col = col_diff / step;
 
     let first_antinode_coord = Coordinate2D {
         row: start_coord.row - step_row,
@@ -102,7 +102,7 @@ fn find_antinode_coords(
 
     if recursive {
         if is_first_antinode_in_map {
-            find_antinode_coords(
+            find_antinode_coordinates(
                 first_antinode_coord,
                 start_coord,
                 max_row,
@@ -115,7 +115,7 @@ fn find_antinode_coords(
         }
 
         if is_second_antinode_in_map {
-            find_antinode_coords(
+            find_antinode_coordinates(
                 end_coord,
                 second_antinode_coord,
                 max_row,
@@ -161,14 +161,16 @@ fn read_antennas_map_and_max_row_and_max_col() -> (HashMap<char, Vec<Coordinate2
 
         max_col = trimmed_line.len() - 1;
 
-        for (col, ch) in trimmed_line.chars().enumerate() {
-            if ch != '.' {
-                let antenna_coords = antennas_map.entry(ch).or_insert(vec![]);
-                antenna_coords.push(Coordinate2D {
-                    row,
-                    col: col as i32,
-                });
-            }
+        for (col, ch) in trimmed_line
+            .chars()
+            .enumerate()
+            .filter(|(_, ch)| *ch != '.')
+        {
+            let antenna_coords = antennas_map.entry(ch).or_insert(vec![]);
+            antenna_coords.push(Coordinate2D {
+                row,
+                col: col as i32,
+            });
         }
 
         row += 1;
