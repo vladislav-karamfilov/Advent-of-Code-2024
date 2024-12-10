@@ -1,23 +1,119 @@
 fn main() {
-    solve_puzzle1();
-    // solve_puzzle2();
+    // solve_puzzle1();
+    solve_puzzle2();
+}
+
+#[allow(dead_code)]
+fn solve_puzzle2() {
+    let (files, free_space_blocks) = read_files_and_free_space_blocks();
+
+    let checksum = calculate_checksum_of_compacted_file_system_blocks_by_moving_files(
+        &files,
+        &free_space_blocks,
+    );
+
+    println!("{checksum}");
 }
 
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let (files, free_space_blocks) = read_files_and_free_space_blocks();
 
-    let compacted_file_system_blocks = compact_file_system_blocks(&files, &free_space_blocks);
-
-    let mut checksum = 0;
-    for (i, file_id) in compacted_file_system_blocks.iter().enumerate() {
-        checksum += i * file_id;
-    }
+    let checksum = calculate_checksum_of_compacted_file_system_blocks_by_moving_file_blocks(
+        &files,
+        &free_space_blocks,
+    );
 
     println!("{checksum}");
 }
 
-fn compact_file_system_blocks(files: &Vec<File>, free_space_blocks: &Vec<usize>) -> Vec<usize> {
+fn calculate_checksum_of_compacted_file_system_blocks_by_moving_files(
+    files: &[File],
+    free_space_blocks: &[i32],
+) -> u64 {
+    let mut compacted_file_system_blocks =
+        Vec::with_capacity(files.len() + free_space_blocks.len());
+
+    // Build initial file system blocks
+    for (i, file) in files.iter().enumerate() {
+        for _ in 0..file.blocks {
+            compacted_file_system_blocks.push(file.id);
+        }
+
+        if i <= free_space_blocks.len() - 1 && free_space_blocks[i] > 0 {
+            compacted_file_system_blocks.push(-1 * free_space_blocks[i]);
+        }
+    }
+
+    for file in files.iter().rev() {
+        // Find big enough free space to move file into
+        let free_space_index = compacted_file_system_blocks
+            .iter()
+            .enumerate()
+            .filter(|(i, b)| {
+                **b < 0
+                    && b.abs() >= file.blocks
+                    && *i
+                        < compacted_file_system_blocks
+                            .iter()
+                            .position(|b| *b == file.id)
+                            .unwrap()
+            })
+            .map(|(i, _)| i)
+            .next();
+
+        if let Some(free_space_index) = free_space_index {
+            // Update the space left after file is moved
+            let free_space_blocks = compacted_file_system_blocks[free_space_index].abs();
+            if free_space_blocks > file.blocks {
+                compacted_file_system_blocks[free_space_index] = file.blocks - free_space_blocks;
+            } else {
+                compacted_file_system_blocks.remove(free_space_index);
+            }
+
+            // Move file blocks into free space blocks
+            for _ in 0..file.blocks {
+                compacted_file_system_blocks.insert(free_space_index, file.id);
+            }
+
+            let old_file_block_index = compacted_file_system_blocks
+                .iter()
+                .rposition(|x| *x == file.id)
+                .unwrap();
+
+            // Replace old file blocks with free space blocks
+            for i in 0..file.blocks {
+                compacted_file_system_blocks[old_file_block_index - i as usize] = -1;
+            }
+
+            // Compact free space after moving file blocks
+            for i in (1..compacted_file_system_blocks.len()).rev() {
+                if compacted_file_system_blocks[i] < 0 && compacted_file_system_blocks[i - 1] < 0 {
+                    compacted_file_system_blocks[i - 1] += compacted_file_system_blocks[i];
+                    compacted_file_system_blocks.remove(i);
+                }
+            }
+        }
+    }
+
+    let mut checksum = 0;
+    let mut file_block_index = 0;
+    for block in compacted_file_system_blocks.iter() {
+        if *block >= 0 {
+            checksum += file_block_index * (*block as u64);
+            file_block_index += 1;
+        } else {
+            file_block_index += block.abs() as u64;
+        }
+    }
+
+    checksum
+}
+
+fn calculate_checksum_of_compacted_file_system_blocks_by_moving_file_blocks(
+    files: &[File],
+    free_space_blocks: &[i32],
+) -> u64 {
     let mut compacted_file_system_blocks = vec![];
     let mut last_file_index = files.len() - 1;
     let mut last_block_in_last_file_index = files[last_file_index].blocks;
@@ -59,10 +155,15 @@ fn compact_file_system_blocks(files: &Vec<File>, free_space_blocks: &Vec<usize>)
         last_block_in_last_file_index -= 1;
     }
 
-    compacted_file_system_blocks
+    let mut checksum = 0;
+    for (i, file_id) in compacted_file_system_blocks.iter().enumerate() {
+        checksum += (i as u64) * (*file_id as u64);
+    }
+
+    checksum
 }
 
-fn read_files_and_free_space_blocks() -> (Vec<File>, Vec<usize>) {
+fn read_files_and_free_space_blocks() -> (Vec<File>, Vec<i32>) {
     let mut line = String::new();
 
     std::io::stdin()
@@ -77,7 +178,7 @@ fn read_files_and_free_space_blocks() -> (Vec<File>, Vec<usize>) {
     let mut is_reading_file = true;
 
     for ch in trimmed_line.chars() {
-        let blocks = ch.to_digit(10).unwrap() as usize;
+        let blocks = ch.to_digit(10).unwrap() as i32;
         if is_reading_file {
             files.push(File {
                 id: file_id,
@@ -96,6 +197,6 @@ fn read_files_and_free_space_blocks() -> (Vec<File>, Vec<usize>) {
 }
 
 struct File {
-    id: usize,
-    blocks: usize,
+    id: i32,
+    blocks: i32,
 }
