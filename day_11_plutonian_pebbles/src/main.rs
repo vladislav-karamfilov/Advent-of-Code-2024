@@ -1,6 +1,26 @@
+use std::collections::HashMap;
+
 fn main() {
-    solve_puzzle1();
-    // solve_puzzle2();
+    // solve_puzzle1();
+    solve_puzzle2();
+}
+
+#[allow(dead_code)]
+fn solve_puzzle2() {
+    let stones = read_stones();
+
+    let mut stone_occurrences = HashMap::new();
+
+    stones
+        .iter()
+        .for_each(|s| *stone_occurrences.entry(*s).or_insert(0) += 1);
+
+    for _ in 0..75 {
+        stone_occurrences = transform_stones(stone_occurrences);
+    }
+
+    let count = stone_occurrences.values().sum::<usize>();
+    println!("{count}");
 }
 
 #[allow(dead_code)]
@@ -8,13 +28,39 @@ fn solve_puzzle1() {
     let mut stones = read_stones();
 
     for _ in 0..25 {
-        transform_stones(&mut stones);
+        transform_stones_naive(&mut stones);
     }
 
     println!("{}", stones.len());
 }
 
-fn transform_stones(stones: &mut Vec<u64>) {
+fn transform_stones(stone_occurrences: HashMap<u64, usize>) -> HashMap<u64, usize> {
+    let mut result = HashMap::with_capacity(stone_occurrences.len());
+
+    for (stone, occurrences) in stone_occurrences.iter() {
+        if *stone == 0 {
+            let new_stone = 1;
+
+            let new_stone_occurrences = result.entry(new_stone).or_default();
+            *new_stone_occurrences += occurrences;
+        } else if let Some((first_new_stone, second_new_stone)) = split_stone(*stone) {
+            let first_new_stone_occurrences = result.entry(first_new_stone).or_default();
+            *first_new_stone_occurrences += occurrences;
+
+            let second_new_stone_occurrences = result.entry(second_new_stone).or_default();
+            *second_new_stone_occurrences += occurrences;
+        } else {
+            let new_stone = stone * 2024;
+
+            let new_stone_occurrences = result.entry(new_stone).or_default();
+            *new_stone_occurrences += occurrences;
+        }
+    }
+
+    result
+}
+
+fn transform_stones_naive(stones: &mut Vec<u64>) {
     let mut i = 0;
     while i < stones.len() {
         let stone = stones[i];
@@ -59,10 +105,7 @@ fn read_stones() -> Vec<u64> {
         .read_line(&mut line)
         .expect("Failed to read line");
 
-    let trimmed_line = line.trim();
-
-    trimmed_line
-        .split_whitespace()
+    line.split_whitespace()
         .map(|n| n.parse().unwrap())
         .collect()
 }
