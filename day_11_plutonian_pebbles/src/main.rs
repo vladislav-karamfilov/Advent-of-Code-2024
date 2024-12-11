@@ -13,13 +13,13 @@ fn solve_puzzle2() {
 
     stones
         .iter()
-        .for_each(|s| *stone_occurrences.entry(*s).or_insert(0) += 1);
+        .for_each(|s| *stone_occurrences.entry(*s).or_default() += 1);
 
     for _ in 0..75 {
         stone_occurrences = transform_stones(stone_occurrences);
     }
 
-    let count = stone_occurrences.values().sum::<usize>();
+    let count = stone_occurrences.values().sum::<u64>();
     println!("{count}");
 }
 
@@ -34,16 +34,16 @@ fn solve_puzzle1() {
     println!("{}", stones.len());
 }
 
-fn transform_stones(stone_occurrences: HashMap<u64, usize>) -> HashMap<u64, usize> {
+fn transform_stones(stone_occurrences: HashMap<u64, u64>) -> HashMap<u64, u64> {
     let mut result = HashMap::with_capacity(stone_occurrences.len());
 
-    for (stone, occurrences) in stone_occurrences.iter() {
-        if *stone == 0 {
+    for (stone, occurrences) in stone_occurrences {
+        if stone == 0 {
             let new_stone = 1;
 
             let new_stone_occurrences = result.entry(new_stone).or_default();
             *new_stone_occurrences += occurrences;
-        } else if let Some((first_new_stone, second_new_stone)) = split_stone(*stone) {
+        } else if let Some((first_new_stone, second_new_stone)) = split_stone(stone) {
             let first_new_stone_occurrences = result.entry(first_new_stone).or_default();
             *first_new_stone_occurrences += occurrences;
 
