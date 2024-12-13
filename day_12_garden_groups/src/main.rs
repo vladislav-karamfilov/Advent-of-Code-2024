@@ -77,7 +77,6 @@ fn find_garden_plot_regions(garden_plots_map: &[Vec<char>]) -> Vec<GardenPlotReg
             };
 
             find_garden_plots_in_region(
-                *plant_type,
                 current_position,
                 garden_plots_map,
                 &mut new_garden_plots_region,
@@ -95,7 +94,6 @@ fn find_garden_plot_regions(garden_plots_map: &[Vec<char>]) -> Vec<GardenPlotReg
 }
 
 fn find_garden_plots_in_region(
-    plant_type: char,
     current_position: Position,
     garden_plots_map: &[Vec<char>],
     garden_plots_region: &mut GardenPlotRegion,
@@ -108,15 +106,10 @@ fn find_garden_plots_in_region(
             col: current_position.col,
         };
 
-        if garden_plots_map[next_position.row][next_position.col] == plant_type
+        if garden_plots_map[next_position.row][next_position.col] == garden_plots_region.plant_type
             && !garden_plots_region.positions.contains(&next_position)
         {
-            find_garden_plots_in_region(
-                plant_type,
-                next_position,
-                garden_plots_map,
-                garden_plots_region,
-            );
+            find_garden_plots_in_region(next_position, garden_plots_map, garden_plots_region);
         }
     }
 
@@ -126,15 +119,10 @@ fn find_garden_plots_in_region(
             col: current_position.col,
         };
 
-        if garden_plots_map[next_position.row][next_position.col] == plant_type
+        if garden_plots_map[next_position.row][next_position.col] == garden_plots_region.plant_type
             && !garden_plots_region.positions.contains(&next_position)
         {
-            find_garden_plots_in_region(
-                plant_type,
-                next_position,
-                garden_plots_map,
-                garden_plots_region,
-            );
+            find_garden_plots_in_region(next_position, garden_plots_map, garden_plots_region);
         }
     }
 
@@ -144,15 +132,10 @@ fn find_garden_plots_in_region(
             col: current_position.col + 1,
         };
 
-        if garden_plots_map[next_position.row][next_position.col] == plant_type
+        if garden_plots_map[next_position.row][next_position.col] == garden_plots_region.plant_type
             && !garden_plots_region.positions.contains(&next_position)
         {
-            find_garden_plots_in_region(
-                plant_type,
-                next_position,
-                garden_plots_map,
-                garden_plots_region,
-            );
+            find_garden_plots_in_region(next_position, garden_plots_map, garden_plots_region);
         }
     }
 
@@ -162,15 +145,10 @@ fn find_garden_plots_in_region(
             col: current_position.col - 1,
         };
 
-        if garden_plots_map[next_position.row][next_position.col] == plant_type
+        if garden_plots_map[next_position.row][next_position.col] == garden_plots_region.plant_type
             && !garden_plots_region.positions.contains(&next_position)
         {
-            find_garden_plots_in_region(
-                plant_type,
-                next_position,
-                garden_plots_map,
-                garden_plots_region,
-            );
+            find_garden_plots_in_region(next_position, garden_plots_map, garden_plots_region);
         }
     }
 }
