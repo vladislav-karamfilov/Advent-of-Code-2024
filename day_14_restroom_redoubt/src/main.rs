@@ -1,6 +1,38 @@
+use std::collections::HashSet;
+
 fn main() {
     // solve_puzzle1(10, 6);
-    solve_puzzle1(100, 102);
+    // solve_puzzle1(100, 102);
+    solve_puzzle2(100, 102);
+}
+
+#[allow(dead_code)]
+fn solve_puzzle2(max_x: i32, max_y: i32) {
+    let mut robots = read_robots();
+
+    let mut seconds = 0;
+
+    // Assume robots form a picture of a Christmas tree when all of them are in a different position
+    loop {
+        let mut unique_coords = HashSet::with_capacity(robots.len());
+
+        robots.iter_mut().for_each(|r| {
+            r.simulate_move(max_x, max_y);
+
+            unique_coords.insert(r.position);
+        });
+
+        seconds += 1;
+
+        if unique_coords.len() == robots.len() {
+            println!("{seconds}");
+
+            println!();
+            print_robots(&robots, max_x, max_y);
+
+            return;
+        }
+    }
 }
 
 #[allow(dead_code)]
@@ -10,7 +42,7 @@ fn solve_puzzle1(max_x: i32, max_y: i32) {
     (0..100).for_each(|_| {
         robots
             .iter_mut()
-            .for_each(|r| r.simulate_move(max_x, max_y))
+            .for_each(|r| r.simulate_move(max_x, max_y));
     });
 
     let safety_factor = calculate_safety_factor(&robots, max_x, max_y);
@@ -98,7 +130,6 @@ fn read_robots() -> Vec<Robot> {
     result
 }
 
-#[allow(dead_code)]
 fn print_robots(robots: &Vec<Robot>, max_x: i32, max_y: i32) {
     for y in 0..=max_y {
         for x in 0..=max_x {
@@ -146,6 +177,7 @@ impl Robot {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Coordinate2D {
     x: i32,
     y: i32,
