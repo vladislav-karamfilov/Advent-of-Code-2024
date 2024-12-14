@@ -14,16 +14,17 @@ fn solve_puzzle1() {
         .iter()
         .map(|(a, b, p)| {
             if let Some(min_cost) = calculate_min_cost_to_prize(*a, *b, *p) {
-                return min_cost;
+                min_cost
+            } else {
+                0
             }
-
-            0
         })
         .sum::<u32>();
 
     println!("{total_cost}");
 }
 
+// Implementation of A* search algorithm: https://en.wikipedia.org/wiki/A*_search_algorithm
 fn calculate_min_cost_to_prize(
     button_a_move_vector: Coordinate2D,
     button_b_move_vector: Coordinate2D,
@@ -51,9 +52,7 @@ fn calculate_min_cost_to_prize(
             return Some(current_state.cost);
         }
 
-        if !seen.insert((current_state.coord, current_state.cost)) {
-            continue;
-        }
+        seen.insert((current_state.coord, current_state.cost));
 
         let next_states = calculate_next_states(
             &current_state,
