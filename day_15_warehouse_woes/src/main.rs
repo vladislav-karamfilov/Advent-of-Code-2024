@@ -1,20 +1,18 @@
 fn main() {
+    solve_puzzle1();
+}
+
+#[allow(dead_code)]
+fn solve_puzzle1() {
     let (mut warehouse_map, robot_movements) = read_warehouse_map_and_robot_movements();
 
     execute_robot_movements(robot_movements, &mut warehouse_map);
 
     // print_warehouse_map(&warehouse_map, robot_position);
 
-    let mut result = 0;
-    for (row, line) in warehouse_map.iter().enumerate() {
-        for (col, ch) in line.iter().enumerate() {
-            if *ch == 'O' {
-                result += row * 100 + col;
-            }
-        }
-    }
+    let sum_of_coordinates = calculate_sum_of_box_gps_coordinates(&warehouse_map);
 
-    println!("{result}");
+    println!("{sum_of_coordinates}");
 }
 
 fn execute_robot_movements(
@@ -24,7 +22,7 @@ fn execute_robot_movements(
     let robot_row = warehouse_map.iter().position(|l| l.contains(&'@')).unwrap();
     let robot_col = warehouse_map[robot_row]
         .iter()
-        .position(|ch| *ch == '@')
+        .position(|tile| *tile == '@')
         .unwrap();
 
     warehouse_map[robot_row][robot_col] = '.';
@@ -99,6 +97,20 @@ fn calculate_position_after_movement(
     }
 }
 
+fn calculate_sum_of_box_gps_coordinates(warehouse_map: &[Vec<char>]) -> usize {
+    let mut result = 0;
+
+    for (row, line) in warehouse_map.iter().enumerate() {
+        for (col, tile) in line.iter().enumerate() {
+            if *tile == 'O' {
+                result += row * 100 + col;
+            }
+        }
+    }
+
+    result
+}
+
 fn read_warehouse_map_and_robot_movements() -> (Vec<Vec<char>>, Vec<MoveDirection>) {
     let mut warehouse_map = vec![];
     let mut robot_movements = vec![];
@@ -124,7 +136,7 @@ fn read_warehouse_map_and_robot_movements() -> (Vec<Vec<char>>, Vec<MoveDirectio
         if is_reading_warehouse_map {
             warehouse_map.push(trimmed_line.chars().collect());
         } else {
-            robot_movements.extend(trimmed_line.chars().map(|ch| match ch {
+            robot_movements.extend(trimmed_line.chars().map(|tile| match tile {
                 '^' => MoveDirection::Up,
                 'v' => MoveDirection::Down,
                 '<' => MoveDirection::Left,
@@ -140,11 +152,11 @@ fn read_warehouse_map_and_robot_movements() -> (Vec<Vec<char>>, Vec<MoveDirectio
 #[allow(dead_code)]
 fn print_warehouse_map(warehouse_map: &[Vec<char>], robot_position: Position) {
     for (row, line) in warehouse_map.iter().enumerate() {
-        for (col, ch) in line.iter().enumerate() {
+        for (col, tile) in line.iter().enumerate() {
             if row == robot_position.row && col == robot_position.col {
                 print!("@");
             } else {
-                print!("{ch}");
+                print!("{tile}");
             }
         }
 
