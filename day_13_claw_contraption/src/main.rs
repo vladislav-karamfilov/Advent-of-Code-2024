@@ -3,7 +3,31 @@ use std::{cmp::Reverse, collections::HashSet, vec};
 use priority_queue::PriorityQueue;
 
 fn main() {
-    solve_puzzle1();
+    // solve_puzzle1();
+    solve_puzzle2();
+}
+
+#[allow(dead_code)]
+fn solve_puzzle2() {
+    let button_move_vectors_and_prize_coords = read_button_move_vectors_and_prize_coords();
+
+    let total_cost = button_move_vectors_and_prize_coords
+        .iter()
+        .map(|(a, b, p)| {
+            let actual_prize_coord = Coordinate2D {
+                x: p.x + 10_000_000_000_000,
+                y: p.y + 10_000_000_000_000,
+            };
+
+            if let Some(min_cost) = calculate_min_cost_to_prize(*a, *b, actual_prize_coord) {
+                min_cost
+            } else {
+                0
+            }
+        })
+        .sum::<u64>();
+
+    println!("{total_cost}");
 }
 
 #[allow(dead_code)]
@@ -13,7 +37,7 @@ fn solve_puzzle1() {
     let total_cost = button_move_vectors_and_prize_coords
         .iter()
         .map(|(a, b, p)| {
-            if let Some(min_cost) = calculate_min_cost_to_prize(*a, *b, *p) {
+            if let Some(min_cost) = calculate_min_cost_to_prize_naive(*a, *b, *p) {
                 min_cost
             } else {
                 0
@@ -24,8 +48,40 @@ fn solve_puzzle1() {
     println!("{total_cost}");
 }
 
-// Implementation of A* search algorithm: https://en.wikipedia.org/wiki/A*_search_algorithm
 fn calculate_min_cost_to_prize(
+    button_a_move_vector: Coordinate2D,
+    button_b_move_vector: Coordinate2D,
+    prize_coord: Coordinate2D,
+) -> Option<u64> {
+    // a_pushes * Ax + b_pushes * Bx = Px
+    // a_pushes * Ay + b_pushes * By = Py
+    // =>
+    // a_pushes = (Px - b_pushes * Bx) / Ax
+    // b_pushes = (Py - a_pushes * Ay) / By
+    // =>
+    // b_pushes = (Ax * Py - Ay * Px) / (By * Ax - Bx * Ay)
+
+    let b_pushes = (button_a_move_vector.x * prize_coord.y
+        - button_a_move_vector.y * prize_coord.x)
+        / (button_b_move_vector.y * button_a_move_vector.x
+            - button_b_move_vector.x * button_a_move_vector.y);
+
+    let rem_b = (button_a_move_vector.x * prize_coord.y - button_a_move_vector.y * prize_coord.x)
+        % (button_b_move_vector.y * button_a_move_vector.x
+            - button_b_move_vector.x * button_a_move_vector.y);
+
+    let a_pushes = (prize_coord.x - b_pushes * button_b_move_vector.x) / button_a_move_vector.x;
+    let rem_a = (prize_coord.x - b_pushes * button_b_move_vector.x) % button_a_move_vector.x;
+
+    if rem_b != 0 || rem_a != 0 {
+        None
+    } else {
+        Some(3 * a_pushes as u64 + b_pushes as u64)
+    }
+}
+
+// Implementation of A* search algorithm: https://en.wikipedia.org/wiki/A*_search_algorithm
+fn calculate_min_cost_to_prize_naive(
     button_a_move_vector: Coordinate2D,
     button_b_move_vector: Coordinate2D,
     prize_coord: Coordinate2D,
@@ -202,14 +258,14 @@ fn read_button_move_vectors_and_prize_coords() -> Vec<(Coordinate2D, Coordinate2
 struct ClawMachineState {
     coord: Coordinate2D,
     cost: u32,
-    estimated_distance_to_end: u32,
+    estimated_distance_to_end: u64,
     button_a_pushes: u32,
     button_b_pushes: u32,
 }
 
 impl ClawMachineState {
-    fn get_score(&self) -> u32 {
-        self.cost + self.estimated_distance_to_end
+    fn get_score(&self) -> u64 {
+        self.cost as u64 + self.estimated_distance_to_end
     }
 
     fn set_estimated_distance_to_end(&mut self, end: Coordinate2D) {
@@ -220,6 +276,6 @@ impl ClawMachineState {
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
 struct Coordinate2D {
-    x: u32,
-    y: u32,
+    x: i64,
+    y: i64,
 }
