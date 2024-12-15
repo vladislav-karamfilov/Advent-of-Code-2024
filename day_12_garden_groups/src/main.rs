@@ -1,7 +1,27 @@
 use std::collections::HashSet;
 
 fn main() {
-    solve_puzzle1();
+    // solve_puzzle1();
+    solve_puzzle2();
+}
+
+#[allow(dead_code)]
+fn solve_puzzle2() {
+    let garden_plots_map = read_garden_plots_map();
+
+    let garden_plot_regions = find_garden_plot_regions(&garden_plots_map);
+
+    let total_price_of_fencing = garden_plot_regions
+        .iter()
+        .map(|r| {
+            let area = r.positions.len();
+            let number_of_sides = calculate_garden_plots_region_number_of_sides(r);
+
+            area * number_of_sides
+        })
+        .sum::<usize>();
+
+    println!("{total_price_of_fencing}");
 }
 
 #[allow(dead_code)]
@@ -21,6 +41,76 @@ fn solve_puzzle1() {
         .sum::<usize>();
 
     println!("{total_price_of_fencing}");
+}
+
+fn calculate_garden_plots_region_number_of_sides(garden_plots_region: &GardenPlotRegion) -> usize {
+    let mut result = 0;
+
+    for position in garden_plots_region.positions.iter() {
+        let row = position.row;
+        let col = position.col;
+
+        // The number of sides is equal to the number of corners of the region
+        let up = row > 0
+            && garden_plots_region
+                .positions
+                .contains(&Position { row: row - 1, col });
+
+        let down = garden_plots_region
+            .positions
+            .contains(&Position { row: row + 1, col });
+
+        let left = col > 0
+            && garden_plots_region
+                .positions
+                .contains(&Position { row, col: col - 1 });
+
+        let right = garden_plots_region
+            .positions
+            .contains(&Position { row, col: col + 1 });
+
+        let up_left = row > 0
+            && col > 0
+            && garden_plots_region.positions.contains(&Position {
+                row: row - 1,
+                col: col - 1,
+            });
+
+        let up_right = row > 0
+            && garden_plots_region.positions.contains(&Position {
+                row: row - 1,
+                col: col + 1,
+            });
+
+        let down_left = col > 0
+            && garden_plots_region.positions.contains(&Position {
+                row: row + 1,
+                col: col - 1,
+            });
+
+        let down_right = garden_plots_region.positions.contains(&Position {
+            row: row + 1,
+            col: col + 1,
+        });
+
+        if !up && !right || up && right && !up_right {
+            result += 1;
+        }
+
+        if !up && !left || up && left && !up_left {
+            result += 1;
+        }
+
+        if !down && !right || down && right && !down_right {
+            result += 1;
+        }
+
+        if !down && !left || down && left && !down_left {
+            result += 1;
+        }
+    }
+
+    result
 }
 
 fn calculate_garden_plots_region_perimeter(
@@ -179,7 +269,7 @@ struct GardenPlotRegion {
     positions: HashSet<Position>,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 struct Position {
     row: usize,
     col: usize,
