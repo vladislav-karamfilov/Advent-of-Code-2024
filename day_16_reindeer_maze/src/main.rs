@@ -43,7 +43,7 @@ fn calculate_min_score_to_end(maze: &[Vec<char>], start: Position, end: Position
 
     let mut initial_state = PathState {
         position: start,
-        score: 0,
+        cost: 0,
         estimated_distance_to_end: 0,
         move_direction: MoveDirection::East,
     };
@@ -53,11 +53,11 @@ fn calculate_min_score_to_end(maze: &[Vec<char>], start: Position, end: Position
     let state_score = initial_state.get_score();
     states.push(initial_state, Reverse(state_score));
 
-    let mut seen = HashSet::new();
+    let mut seen = HashSet::with_capacity(100);
 
     while let Some((current_state, _)) = states.pop() {
         if current_state.position == end {
-            return Some(current_state.score);
+            return Some(current_state.cost);
         }
 
         if !seen.insert((current_state.position, current_state.move_direction)) {
@@ -83,7 +83,7 @@ fn calculate_next_states(
 ) -> Vec<PathState> {
     let mut result = Vec::with_capacity(3);
 
-    let new_score = current_state.score + 1;
+    let new_cost = current_state.cost + 1;
     let forward_position = match current_state.move_direction {
         MoveDirection::North => Position {
             row: current_state.position.row - 1,
@@ -106,12 +106,16 @@ fn calculate_next_states(
     if maze[forward_position.row][forward_position.col] != '#'
         && !seen.contains(&(forward_position, current_state.move_direction))
     {
-        result.push(PathState {
+        let mut new_state = PathState {
             position: forward_position,
-            score: new_score,
+            cost: new_cost,
             estimated_distance_to_end: 0,
             move_direction: current_state.move_direction,
-        });
+        };
+
+        new_state.set_estimated_distance_to_end(end);
+
+        result.push(new_state);
     }
 
     let rotate_positions_and_directions = match current_state.move_direction {
@@ -149,23 +153,18 @@ fn calculate_next_states(
         ],
     };
 
+    let new_cost = current_state.cost + 1_000;
     for (rotate_position, new_direction) in rotate_positions_and_directions {
-        let new_score = current_state.score + 1_000;
-
         if maze[rotate_position.row][rotate_position.col] != '#'
             && !seen.contains(&(current_state.position, new_direction))
         {
             result.push(PathState {
                 position: current_state.position,
-                score: new_score,
-                estimated_distance_to_end: 0,
+                cost: new_cost,
+                estimated_distance_to_end: current_state.estimated_distance_to_end,
                 move_direction: new_direction,
             });
         }
-    }
-
-    for state in result.iter_mut() {
-        state.set_estimated_distance_to_end(end);
     }
 
     result
@@ -195,14 +194,14 @@ fn read_maze() -> Vec<Vec<char>> {
 #[derive(Hash, PartialEq, Eq)]
 struct PathState {
     position: Position,
-    score: u32,
+    cost: u32,
     estimated_distance_to_end: u32,
     move_direction: MoveDirection,
 }
 
 impl PathState {
     fn get_score(&self) -> u32 {
-        self.score + self.estimated_distance_to_end
+        self.cost + self.estimated_distance_to_end
     }
 
     fn set_estimated_distance_to_end(&mut self, end: Position) {
@@ -210,6 +209,7 @@ impl PathState {
             end.row.abs_diff(self.position.row) as u32 + end.col.abs_diff(self.position.col) as u32;
     }
 }
+
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
 struct Position {
     row: usize,
