@@ -60,13 +60,11 @@ fn calculate_min_score_to_end(maze: &[Vec<char>], start: Position, end: Position
             return Some(current_state.score);
         }
 
-        seen.insert((
-            current_state.position,
-            current_state.score,
-            current_state.move_direction,
-        ));
+        if !seen.insert((current_state.position, current_state.move_direction)) {
+            continue;
+        }
 
-        let next_states = calculate_next_states(&current_state, maze, end, &seen);
+        let next_states = calculate_next_states(&current_state, end, maze, &seen);
 
         for next_state in next_states {
             let state_score = next_state.get_score();
@@ -79,11 +77,11 @@ fn calculate_min_score_to_end(maze: &[Vec<char>], start: Position, end: Position
 
 fn calculate_next_states(
     current_state: &PathState,
-    maze: &[Vec<char>],
     end: Position,
-    seen: &HashSet<(Position, u32, MoveDirection)>,
+    maze: &[Vec<char>],
+    seen: &HashSet<(Position, MoveDirection)>,
 ) -> Vec<PathState> {
-    let mut result = vec![];
+    let mut result = Vec::with_capacity(3);
 
     let new_score = current_state.score + 1;
     let forward_position = match current_state.move_direction {
@@ -106,7 +104,7 @@ fn calculate_next_states(
     };
 
     if maze[forward_position.row][forward_position.col] != '#'
-        && !seen.contains(&(forward_position, new_score, current_state.move_direction))
+        && !seen.contains(&(forward_position, current_state.move_direction))
     {
         result.push(PathState {
             position: forward_position,
@@ -155,7 +153,7 @@ fn calculate_next_states(
         let new_score = current_state.score + 1_000;
 
         if maze[rotate_position.row][rotate_position.col] != '#'
-            && !seen.contains(&(current_state.position, new_score, new_direction))
+            && !seen.contains(&(current_state.position, new_direction))
         {
             result.push(PathState {
                 position: current_state.position,
