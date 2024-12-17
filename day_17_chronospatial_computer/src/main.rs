@@ -49,10 +49,6 @@ fn read_program() -> Program {
 
         if is_reading_register_values {
             if let Some(register_a_start_index) = trimmed_line.find("A:") {
-                println!(
-                    "raw: {}",
-                    trimmed_line[register_a_start_index + 2..].to_string()
-                );
                 program.register_values.a_value =
                     trimmed_line[register_a_start_index + 3..].parse().unwrap();
             } else if let Some(register_b_start_index) = trimmed_line.find("B:") {
@@ -63,8 +59,8 @@ fn read_program() -> Program {
                     trimmed_line[register_c_start_index + 3..].parse().unwrap();
             }
         } else {
-            let instruction_opcodes_start_index = trimmed_line.find(':').unwrap() + 2;
-            program.instruction_opcodes = trimmed_line[instruction_opcodes_start_index..]
+            let instruction_opcodes_start_index = trimmed_line.find(':').unwrap();
+            program.instruction_opcodes = trimmed_line[instruction_opcodes_start_index + 2..]
                 .split(',')
                 .map(|x| x.parse().unwrap())
                 .collect();
