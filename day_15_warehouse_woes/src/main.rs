@@ -1,5 +1,19 @@
 fn main() {
-    solve_puzzle1();
+    // solve_puzzle1();
+    solve_puzzle2();
+}
+
+#[allow(dead_code)]
+fn solve_puzzle2() {
+    let (warehouse_map, robot_movements) = read_warehouse_map_and_robot_movements();
+
+    let mut resized_warehouse_map = resize_warehouse_map(&warehouse_map);
+
+    execute_robot_movements(robot_movements, &mut resized_warehouse_map);
+
+    let sum_of_coordinates = calculate_sum_of_box_gps_coordinates(&resized_warehouse_map);
+
+    println!("{sum_of_coordinates}");
 }
 
 #[allow(dead_code)]
@@ -7,8 +21,6 @@ fn solve_puzzle1() {
     let (mut warehouse_map, robot_movements) = read_warehouse_map_and_robot_movements();
 
     execute_robot_movements(robot_movements, &mut warehouse_map);
-
-    // print_warehouse_map(&warehouse_map, robot_position);
 
     let sum_of_coordinates = calculate_sum_of_box_gps_coordinates(&warehouse_map);
 
@@ -33,7 +45,8 @@ fn execute_robot_movements(
     };
 
     for move_direction in robot_movements {
-        let next_robot_position = calculate_position_after_movement(robot_position, move_direction);
+        let next_robot_position =
+            calculate_position_after_movement(robot_position, move_direction, 1);
 
         if warehouse_map[next_robot_position.row][next_robot_position.col] == '#' {
             continue;
@@ -45,11 +58,20 @@ fn execute_robot_movements(
             continue;
         }
 
+        if (warehouse_map[next_robot_position.row][next_robot_position.col] == '['
+            || warehouse_map[next_robot_position.row][next_robot_position.col] == ']')
+            && !try_move_resized_box(next_robot_position, move_direction, warehouse_map)
+        {
+            continue;
+        }
+
         robot_position = next_robot_position;
 
-        // print_warehouse_map(&warehouse_map, robot_position);
-        // println!();
+        print_warehouse_map(&warehouse_map, robot_position);
+        println!();
     }
+
+    // print_warehouse_map(&warehouse_map, robot_position);
 }
 
 fn try_move_box(
@@ -57,10 +79,10 @@ fn try_move_box(
     move_direction: MoveDirection,
     warehouse_map: &mut [Vec<char>],
 ) -> bool {
-    let mut next_box_position = calculate_position_after_movement(box_position, move_direction);
+    let mut next_box_position = calculate_position_after_movement(box_position, move_direction, 1);
 
     while warehouse_map[next_box_position.row][next_box_position.col] == 'O' {
-        next_box_position = calculate_position_after_movement(next_box_position, move_direction);
+        next_box_position = calculate_position_after_movement(next_box_position, move_direction, 1);
     }
 
     if warehouse_map[next_box_position.row][next_box_position.col] == '.' {
@@ -73,26 +95,93 @@ fn try_move_box(
     false
 }
 
+fn try_move_resized_box(
+    box_position: Position,
+    move_direction: MoveDirection,
+    warehouse_map: &mut [Vec<char>],
+) -> bool {
+    if move_direction == MoveDirection::Right || move_direction == MoveDirection::Left {
+        return try_move_resized_box_to_right_or_left(box_position, move_direction, warehouse_map);
+    }
+
+    todo!()
+}
+
+fn try_move_resized_box_to_right_or_left(
+    box_position: Position,
+    move_direction: MoveDirection,
+    warehouse_map: &mut [Vec<char>],
+) -> bool {
+    let next_box_position = calculate_position_after_movement(box_position, move_direction, 2);
+
+    if warehouse_map[next_box_position.row][next_box_position.col] == '['
+        || warehouse_map[next_box_position.row][next_box_position.col] == ']'
+    {
+        return try_move_resized_box_to_right_or_left(
+            next_box_position,
+            move_direction,
+            warehouse_map,
+        );
+    }
+
+    if warehouse_map[next_box_position.row][next_box_position.col] == '.' {
+        if move_direction == MoveDirection::Right {
+            warehouse_map[next_box_position.row][next_box_position.col] = ']';
+            warehouse_map[next_box_position.row][next_box_position.col - 1] = '[';
+
+            let tile = warehouse_map[box_position.row][box_position.col];
+
+            warehouse_map[box_position.row][box_position.col] = match tile {
+                '[' => ']',
+                ']' => '[',
+                _ => '.',
+            };
+
+            warehouse_map[box_position.row][box_position.col - 1] = tile;
+            warehouse_map[box_position.row][box_position.col - 2] = '.';
+        } else {
+            warehouse_map[next_box_position.row][next_box_position.col] = '[';
+            warehouse_map[next_box_position.row][next_box_position.col + 1] = ']';
+
+            let tile = warehouse_map[box_position.row][box_position.col];
+
+            warehouse_map[box_position.row][box_position.col] = match tile {
+                '[' => ']',
+                ']' => '[',
+                _ => '.',
+            };
+
+            warehouse_map[box_position.row][box_position.col + 1] = tile;
+            warehouse_map[box_position.row][box_position.col + 2] = '.';
+        }
+
+        return true;
+    }
+
+    false
+}
+
 fn calculate_position_after_movement(
     current_position: Position,
     move_direction: MoveDirection,
+    tile_width: u8,
 ) -> Position {
     match move_direction {
         MoveDirection::Up => Position {
-            row: current_position.row - 1,
-            col: current_position.col,
+            row: current_position.row - tile_width as usize,
+            ..current_position
         },
         MoveDirection::Down => Position {
-            row: current_position.row + 1,
-            col: current_position.col,
+            row: current_position.row + tile_width as usize,
+            ..current_position
         },
         MoveDirection::Left => Position {
-            row: current_position.row,
-            col: current_position.col - 1,
+            col: current_position.col - tile_width as usize,
+            ..current_position
         },
         MoveDirection::Right => Position {
-            row: current_position.row,
-            col: current_position.col + 1,
+            col: current_position.col + tile_width as usize,
+            ..current_position
         },
     }
 }
@@ -102,10 +191,39 @@ fn calculate_sum_of_box_gps_coordinates(warehouse_map: &[Vec<char>]) -> usize {
 
     for (row, line) in warehouse_map.iter().enumerate() {
         for (col, tile) in line.iter().enumerate() {
-            if *tile == 'O' {
+            if *tile == 'O' || *tile == '[' {
                 result += row * 100 + col;
             }
         }
+    }
+
+    result
+}
+
+fn resize_warehouse_map(warehouse_map: &[Vec<char>]) -> Vec<Vec<char>> {
+    let mut result = Vec::with_capacity(warehouse_map.len());
+
+    for line in warehouse_map {
+        let mut resized_line = Vec::with_capacity(2 * line.len());
+
+        for tile in line {
+            match tile {
+                'O' => {
+                    resized_line.push('[');
+                    resized_line.push(']');
+                }
+                '@' => {
+                    resized_line.push('@');
+                    resized_line.push('.');
+                }
+                _ => {
+                    resized_line.push(*tile);
+                    resized_line.push(*tile);
+                }
+            }
+        }
+
+        result.push(resized_line);
     }
 
     result
@@ -170,7 +288,7 @@ struct Position {
     col: usize,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 enum MoveDirection {
     Up,
     Down,
