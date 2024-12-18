@@ -75,6 +75,7 @@ fn solve_puzzle1() {
     }
 }
 
+// Implementation of A* search algorithm: https://en.wikipedia.org/wiki/A*_search_algorithm
 fn count_unique_positions_on_paths_to_end(
     maze: &[Vec<char>],
     start: Position,
@@ -96,7 +97,7 @@ fn count_unique_positions_on_paths_to_end(
     let state_score = initial_state.get_score();
     states.push(initial_state, Reverse(state_score));
 
-    let mut visited = HashMap::new(); // Position -> best cost
+    let mut visited = HashMap::new();
 
     let mut unique_positions_on_paths_to_end = HashSet::with_capacity(2 * maze.len());
     unique_positions_on_paths_to_end.insert(start);
@@ -158,21 +159,21 @@ fn calculate_min_score_to_end(maze: &[Vec<char>], start: Position, end: Position
     let state_score = initial_state.get_score();
     states.push(initial_state, Reverse(state_score));
 
-    let mut seen = HashSet::with_capacity(2 * maze.len());
+    let mut visited = HashSet::with_capacity(2 * maze.len());
 
     while let Some((current_state, _)) = states.pop() {
         if current_state.position == end {
             return Some(current_state.cost);
         }
 
-        if !seen.insert((current_state.position, current_state.move_direction)) {
+        if !visited.insert((current_state.position, current_state.move_direction)) {
             continue;
         }
 
         let next_states = calculate_next_states(&current_state, end, maze);
 
         for next_state in next_states {
-            if seen.contains(&(next_state.position, next_state.move_direction)) {
+            if visited.contains(&(next_state.position, next_state.move_direction)) {
                 continue;
             }
 
