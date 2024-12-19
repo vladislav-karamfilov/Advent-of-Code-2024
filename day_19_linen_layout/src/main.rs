@@ -8,6 +8,7 @@ fn main() {
 fn solve_puzzle1() {
     let (mut available_towel_patterns, designs) = read_available_towel_patterns_and_designs();
 
+    // Have the longest towel patterns first so we can do the optimization heuristic below
     available_towel_patterns.sort_by(|a, b| b.len().cmp(&a.len()));
 
     let mut cache = HashMap::with_capacity(5 * designs.len());
@@ -42,16 +43,16 @@ fn is_design_possible(
                 return true;
             }
 
-            if towel_pattern.len() > 1 {
-                if !available_towel_patterns
+            // Optimization heuristic
+            if towel_pattern.len() > 1
+                && !available_towel_patterns
                     .iter()
                     .any(|p| p.len() < towel_pattern.len() && towel_pattern.starts_with(p))
-                {
-                    cache.insert(sub_design.to_string(), false);
+            {
+                cache.insert(sub_design.to_string(), false);
 
-                    // There are no shorter towel patterns that would match the current design start
-                    return false;
-                }
+                // There are no shorter towel patterns that would match the current design start
+                return false;
             }
         }
     }
