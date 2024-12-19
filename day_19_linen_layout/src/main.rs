@@ -1,7 +1,20 @@
 use std::collections::HashMap;
 
 fn main() {
-    solve_puzzle1();
+    // solve_puzzle1();
+    solve_puzzle2();
+}
+
+#[allow(dead_code)]
+fn solve_puzzle2() {
+    let (available_towel_patterns, designs) = read_available_towel_patterns_and_designs();
+
+    let sum = designs
+        .iter()
+        .map(|d| count_towel_pattern_combinations_for_design(d, &available_towel_patterns))
+        .sum::<u64>();
+
+    println!("{sum}");
 }
 
 #[allow(dead_code)]
@@ -19,6 +32,35 @@ fn solve_puzzle1() {
         .count();
 
     println!("{possible_designs}");
+}
+
+fn count_towel_pattern_combinations_for_design(
+    design: &str,
+    available_towel_patterns: &[String],
+) -> u64 {
+    let target_length = design.len();
+    let mut possible_combinations_per_length = vec![0; target_length + 1];
+
+    possible_combinations_per_length[0] = 1; // There's only 1 way to form an empty string
+
+    for i in 0..=target_length {
+        if possible_combinations_per_length[i] == 0 {
+            // We cannot construct up to this length
+            continue;
+        }
+
+        for towel_pattern in available_towel_patterns {
+            let substring_length = towel_pattern.len();
+            if i + substring_length <= target_length
+                && design[i..i + substring_length] == *towel_pattern
+            {
+                possible_combinations_per_length[i + substring_length] +=
+                    possible_combinations_per_length[i];
+            }
+        }
+    }
+
+    possible_combinations_per_length[target_length]
 }
 
 fn is_design_possible(
