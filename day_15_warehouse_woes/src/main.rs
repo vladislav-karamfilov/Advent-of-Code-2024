@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 fn main() {
     // solve_puzzle1();
     solve_puzzle2();
@@ -44,34 +46,39 @@ fn execute_robot_movements(
         col: robot_col,
     };
 
-    for move_direction in robot_movements {
+    print_warehouse_map(&warehouse_map, robot_position);
+    println!();
+
+    for (i, move_direction) in robot_movements.iter().enumerate() {
         let next_robot_position =
-            calculate_position_after_movement(robot_position, move_direction, 1);
+            calculate_position_after_movement(robot_position, *move_direction, 1);
 
         if warehouse_map[next_robot_position.row][next_robot_position.col] == '#' {
             continue;
         }
 
         if warehouse_map[next_robot_position.row][next_robot_position.col] == 'O'
-            && !try_move_box(next_robot_position, move_direction, warehouse_map)
+            && !try_move_box(next_robot_position, *move_direction, warehouse_map)
         {
             continue;
         }
 
         if (warehouse_map[next_robot_position.row][next_robot_position.col] == '['
             || warehouse_map[next_robot_position.row][next_robot_position.col] == ']')
-            && !try_move_resized_box(next_robot_position, move_direction, warehouse_map)
+            && !try_move_resized_box(next_robot_position, *move_direction, warehouse_map)
         {
             continue;
         }
 
         robot_position = next_robot_position;
 
-        print_warehouse_map(&warehouse_map, robot_position);
-        println!();
+        if i > 305 {
+            print_warehouse_map(&warehouse_map, robot_position);
+            println!();
+        }
     }
 
-    // print_warehouse_map(&warehouse_map, robot_position);
+    print_warehouse_map(&warehouse_map, robot_position);
 }
 
 fn try_move_box(
@@ -101,58 +108,122 @@ fn try_move_resized_box(
     warehouse_map: &mut [Vec<char>],
 ) -> bool {
     if move_direction == MoveDirection::Right || move_direction == MoveDirection::Left {
-        return try_move_resized_box_to_right_or_left(box_position, move_direction, warehouse_map);
+        try_move_resized_box_right_or_left(box_position, move_direction, warehouse_map)
+    } else {
+        try_move_resized_box_up_or_down(box_position, move_direction, warehouse_map)
     }
-
-    todo!()
 }
 
-fn try_move_resized_box_to_right_or_left(
+fn try_move_resized_box_up_or_down(
+    box_position: Position,
+    move_direction: MoveDirection,
+    warehouse_map: &mut [Vec<char>],
+) -> bool {
+    let box_cols = match warehouse_map[box_position.row][box_position.col] {
+        '[' => vec![box_position.col, box_position.col + 1],
+        _ => vec![box_position.col - 1, box_position.col],
+    };
+
+    // Build the map of all box side containing cols per row while moving into the passed direction
+    let mut box_cols_per_row = HashMap::new();
+    box_cols_per_row.insert(box_position.row, box_cols);
+
+    let mut row = box_position.row;
+    loop {
+        let next_row = if move_direction == MoveDirection::Up {
+            row - 1
+        } else {
+            row + 1
+        };
+
+        for col in box_cols_per_row.get(&row).unwrap().clone() {
+            let tile = warehouse_map[next_row][col];
+            if tile == '[' {
+                let box_cols_on_next_row = box_cols_per_row.entry(next_row).or_default();
+                box_cols_on_next_row.push(col);
+                box_cols_on_next_row.push(col + 1);
+            } else if tile == ']' {
+                let box_cols_on_next_row = box_cols_per_row.entry(next_row).or_default();
+                box_cols_on_next_row.push(col - 1);
+                box_cols_on_next_row.push(col);
+            }
+        }
+
+        // If there are no box cols on next row we have reached map border or empty space for moving the boxes
+        if box_cols_per_row.get(&next_row).is_none() {
+            let should_move_boxes = box_cols_per_row
+                .get(&row)
+                .unwrap()
+                .iter()
+                .all(|col| warehouse_map[next_row][*col] == '.');
+
+            if !should_move_boxes {
+                // Not enough space for moving the boxes
+                return false;
+            }
+
+            for (row, box_cols) in box_cols_per_row.iter() {
+                let next_row = if move_direction == MoveDirection::Up {
+                    row - 1
+                } else {
+                    row + 1
+                };
+
+                for col in box_cols {
+                    warehouse_map[next_row][*col] = warehouse_map[*row][*col];
+                }
+
+                // Clean up on the left and/or right if needed
+                let min_col = *box_cols.iter().min().unwrap();
+                if warehouse_map[next_row][min_col - 1] == warehouse_map[next_row][min_col] {
+                    warehouse_map[next_row][min_col - 1] = '.';
+                }
+
+                let max_col = *box_cols.iter().max().unwrap();
+                if warehouse_map[next_row][max_col] == warehouse_map[next_row][max_col + 1] {
+                    warehouse_map[next_row][max_col + 1] = '.';
+                }
+            }
+
+            // Clean up the start box position
+            for col in box_cols_per_row.get(&box_position.row).unwrap() {
+                warehouse_map[box_position.row][*col] = '.';
+            }
+
+            return true;
+        }
+
+        row = next_row;
+    }
+}
+
+fn try_move_resized_box_right_or_left(
     box_position: Position,
     move_direction: MoveDirection,
     warehouse_map: &mut [Vec<char>],
 ) -> bool {
     let next_box_position = calculate_position_after_movement(box_position, move_direction, 2);
 
-    if warehouse_map[next_box_position.row][next_box_position.col] == '['
-        || warehouse_map[next_box_position.row][next_box_position.col] == ']'
+    if (warehouse_map[next_box_position.row][next_box_position.col] == '['
+        || warehouse_map[next_box_position.row][next_box_position.col] == ']')
+        && !try_move_resized_box_right_or_left(next_box_position, move_direction, warehouse_map)
     {
-        return try_move_resized_box_to_right_or_left(
-            next_box_position,
-            move_direction,
-            warehouse_map,
-        );
+        return false;
     }
 
     if warehouse_map[next_box_position.row][next_box_position.col] == '.' {
         if move_direction == MoveDirection::Right {
-            warehouse_map[next_box_position.row][next_box_position.col] = ']';
             warehouse_map[next_box_position.row][next_box_position.col - 1] = '[';
+            warehouse_map[next_box_position.row][next_box_position.col] = ']';
 
-            let tile = warehouse_map[box_position.row][box_position.col];
-
-            warehouse_map[box_position.row][box_position.col] = match tile {
-                '[' => ']',
-                ']' => '[',
-                _ => '.',
-            };
-
-            warehouse_map[box_position.row][box_position.col - 1] = tile;
-            warehouse_map[box_position.row][box_position.col - 2] = '.';
+            warehouse_map[box_position.row][box_position.col - 1] = '.';
+            warehouse_map[box_position.row][box_position.col] = '.';
         } else {
             warehouse_map[next_box_position.row][next_box_position.col] = '[';
             warehouse_map[next_box_position.row][next_box_position.col + 1] = ']';
 
-            let tile = warehouse_map[box_position.row][box_position.col];
-
-            warehouse_map[box_position.row][box_position.col] = match tile {
-                '[' => ']',
-                ']' => '[',
-                _ => '.',
-            };
-
-            warehouse_map[box_position.row][box_position.col + 1] = tile;
-            warehouse_map[box_position.row][box_position.col + 2] = '.';
+            warehouse_map[box_position.row][box_position.col] = '.';
+            warehouse_map[box_position.row][box_position.col + 1] = '.';
         }
 
         return true;
