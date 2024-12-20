@@ -3,12 +3,13 @@ use std::{cmp::Reverse, collections::HashSet};
 use priority_queue::PriorityQueue;
 
 fn main() {
-    solve_puzzle1();
+    // solve_puzzle1(2);
+    solve_puzzle1(100);
 }
 
 #[allow(dead_code)]
-fn solve_puzzle1() {
-    let racetrack_map = read_racetrack_map();
+fn solve_puzzle1(min_saved_picoseconds: u32) {
+    let mut racetrack_map = read_racetrack_map();
 
     let start_row = racetrack_map.iter().position(|l| l.contains(&'S')).unwrap();
     let start_col = racetrack_map[start_row]
@@ -32,135 +33,63 @@ fn solve_puzzle1() {
         col: end_col,
     };
 
-    let mut cheat_positions = [Position::default(), Position::default()];
-
-    match calculate_min_seconds_to_end(&racetrack_map, start, end, &cheat_positions) {
+    match calculate_min_picoseconds_to_end(&racetrack_map, start, end) {
         Some(min_picoseconds) => {
-            let mut target_cheats_count = 0;
+            let mut target_cheats = 0;
 
-            // Try horizontal cheats
             for row in 1..racetrack_map.len() - 1 {
-                for col in 1..racetrack_map[row].len() - 2 {
-                    if racetrack_map[row][col] == '#' && racetrack_map[row][col + 1] == '#' {
-                        cheat_positions[0].row = row;
-                        cheat_positions[0].col = col;
-                        cheat_positions[1].row = row;
-                        cheat_positions[1].col = col + 1;
+                for col in 1..racetrack_map[row].len() - 1 {
+                    if racetrack_map[row][col] != '#'
+                        || are_all_neighbors_walls(row, col, &racetrack_map)
+                    {
+                        continue;
+                    }
 
-                        // print_map(&racetrack_map, &cheat_positions);
+                    racetrack_map[row][col] = '.';
 
-                        if let Some(new_min_picoseconds) = calculate_min_seconds_to_end(
-                            &racetrack_map,
-                            start,
-                            end,
-                            &cheat_positions,
-                        ) {
-                            if new_min_picoseconds < min_picoseconds
-                                && min_picoseconds - new_min_picoseconds >= 2
-                            {
-                                println!("saved: {}", min_picoseconds - new_min_picoseconds);
-
-                                target_cheats_count += 1;
-                            }
+                    if let Some(new_min_picoseconds) =
+                        calculate_min_picoseconds_to_end(&racetrack_map, start, end)
+                    {
+                        if new_min_picoseconds < min_picoseconds
+                            && min_picoseconds - new_min_picoseconds >= min_saved_picoseconds
+                        {
+                            target_cheats += 1;
                         }
                     }
+
+                    racetrack_map[row][col] = '#';
                 }
             }
 
-            // Try vertical cheats
-            for col in 1..racetrack_map[0].len() - 1 {
-                for row in 1..racetrack_map.len() - 2 {
-                    if racetrack_map[row][col] == '#' && racetrack_map[row + 1][col] == '#' {
-                        cheat_positions[0].row = row;
-                        cheat_positions[0].col = col;
-                        cheat_positions[1].row = row + 1;
-                        cheat_positions[1].col = col;
-
-                        // print_map(&racetrack_map, &cheat_positions);
-
-                        if let Some(new_min_picoseconds) = calculate_min_seconds_to_end(
-                            &racetrack_map,
-                            start,
-                            end,
-                            &cheat_positions,
-                        ) {
-                            if new_min_picoseconds < min_picoseconds
-                                && min_picoseconds - new_min_picoseconds >= 2
-                            {
-                                println!("saved: {}", min_picoseconds - new_min_picoseconds);
-
-                                target_cheats_count += 1;
-                            }
-                        }
-                    }
-                }
-            }
-
-            println!("{target_cheats_count}")
+            println!("{target_cheats}");
         }
         None => println!("No path to end"),
     }
 }
 
-#[allow(dead_code)]
-fn print_map(map: &[Vec<char>], cheat_positions: &[Position]) {
-    for row in 0..map.len() {
-        for col in 0..map[row].len() {
-            if cheat_positions[0].row == row && cheat_positions[0].col == col {
-                print!("1");
-            } else if cheat_positions[1].row == row && cheat_positions[1].col == col {
-                print!("2");
-            } else {
-                print!("{}", map[row][col]);
-            }
-        }
-
-        println!();
-    }
-
-    println!();
+fn are_all_neighbors_walls(row: usize, col: usize, racetrack_map: &[Vec<char>]) -> bool {
+    racetrack_map[row - 1][col] == '#'
+        && racetrack_map[row + 1][col] == '#'
+        && racetrack_map[row][col - 1] == '#'
+        && racetrack_map[row][col + 1] == '#'
 }
 
 // Implementation of A* search algorithm: https://en.wikipedia.org/wiki/A*_search_algorithm
-fn calculate_min_seconds_to_end(
+fn calculate_min_picoseconds_to_end(
     racetrack_map: &[Vec<char>],
     start: Position,
     end: Position,
-    cheat_positions: &[Position],
 ) -> Option<u32> {
-    let mut states = PriorityQueue::with_capacity(4 * racetrack_map.len());
+    let mut states = PriorityQueue::with_capacity(2 * racetrack_map.len());
 
-    let mut initial_states = [
-        PathState {
-            position: start,
-            move_direction: MoveDirection::Down,
-            picoseconds: 0,
-            estimated_distance_to_end: 0,
-        },
-        PathState {
-            position: start,
-            move_direction: MoveDirection::Up,
-            picoseconds: 0,
-            estimated_distance_to_end: 0,
-        },
-        PathState {
-            position: start,
-            move_direction: MoveDirection::Left,
-            picoseconds: 0,
-            estimated_distance_to_end: 0,
-        },
-        PathState {
-            position: start,
-            move_direction: MoveDirection::Right,
-            picoseconds: 0,
-            estimated_distance_to_end: 0,
-        },
-    ];
+    let initial_state = PathState {
+        position: start,
+        picoseconds: 0,
+        estimated_distance_to_end: 0,
+    };
 
-    initial_states.iter_mut().for_each(|s| {
-        let state_score = s.get_score();
-        states.push(s.clone(), Reverse(state_score));
-    });
+    let initial_state_score = initial_state.get_score();
+    states.push(initial_state, Reverse(initial_state_score));
 
     let mut visited = HashSet::with_capacity(2 * racetrack_map.len());
 
@@ -169,17 +98,11 @@ fn calculate_min_seconds_to_end(
             return Some(current_state.picoseconds);
         }
 
-        if !visited.insert((current_state.position, current_state.move_direction)) {
+        if !visited.insert(current_state.position) {
             continue;
         }
 
-        let next_states = calculate_next_states(
-            &current_state,
-            end,
-            racetrack_map,
-            &visited,
-            cheat_positions,
-        );
+        let next_states = calculate_next_states(&current_state, end, racetrack_map, &visited);
 
         for next_state in next_states {
             let state_score = next_state.get_score();
@@ -194,8 +117,7 @@ fn calculate_next_states(
     current_state: &PathState,
     end: Position,
     racetrack_map: &[Vec<char>],
-    visited: &HashSet<(Position, MoveDirection)>,
-    cheat_positions: &[Position],
+    visited: &HashSet<Position>,
 ) -> Vec<PathState> {
     let mut result = Vec::with_capacity(4);
 
@@ -208,13 +130,11 @@ fn calculate_next_states(
             ..position
         };
 
-        if (racetrack_map[next_position.row][next_position.col] != '#'
-            || cheat_positions.contains(&next_position))
-            && !visited.contains(&(next_position, MoveDirection::Up))
+        if racetrack_map[next_position.row][next_position.col] != '#'
+            && !visited.contains(&next_position)
         {
             result.push(PathState {
                 position: next_position,
-                move_direction: MoveDirection::Up,
                 picoseconds: new_picoseconds,
                 estimated_distance_to_end: 0,
             });
@@ -227,13 +147,11 @@ fn calculate_next_states(
             ..position
         };
 
-        if (racetrack_map[next_position.row][next_position.col] != '#'
-            || cheat_positions.contains(&next_position))
-            && !visited.contains(&(next_position, MoveDirection::Down))
+        if racetrack_map[next_position.row][next_position.col] != '#'
+            && !visited.contains(&next_position)
         {
             result.push(PathState {
                 position: next_position,
-                move_direction: MoveDirection::Up,
                 picoseconds: new_picoseconds,
                 estimated_distance_to_end: 0,
             });
@@ -246,13 +164,11 @@ fn calculate_next_states(
             ..position
         };
 
-        if (racetrack_map[next_position.row][next_position.col] != '#'
-            || cheat_positions.contains(&next_position))
-            && !visited.contains(&(next_position, MoveDirection::Left))
+        if racetrack_map[next_position.row][next_position.col] != '#'
+            && !visited.contains(&next_position)
         {
             result.push(PathState {
                 position: next_position,
-                move_direction: MoveDirection::Left,
                 picoseconds: new_picoseconds,
                 estimated_distance_to_end: 0,
             });
@@ -265,13 +181,11 @@ fn calculate_next_states(
             ..position
         };
 
-        if (racetrack_map[next_position.row][next_position.col] != '#'
-            || cheat_positions.contains(&next_position))
-            && !visited.contains(&(next_position, MoveDirection::Right))
+        if racetrack_map[next_position.row][next_position.col] != '#'
+            && !visited.contains(&next_position)
         {
             result.push(PathState {
                 position: next_position,
-                move_direction: MoveDirection::Right,
                 picoseconds: new_picoseconds,
                 estimated_distance_to_end: 0,
             });
@@ -306,10 +220,9 @@ fn read_racetrack_map() -> Vec<Vec<char>> {
     result
 }
 
-#[derive(Hash, PartialEq, Eq, Clone)]
+#[derive(Hash, PartialEq, Eq)]
 struct PathState {
     position: Position,
-    move_direction: MoveDirection,
     picoseconds: u32,
     estimated_distance_to_end: u32,
 }
@@ -329,12 +242,4 @@ impl PathState {
 struct Position {
     row: usize,
     col: usize,
-}
-
-#[derive(Clone, Copy, Hash, PartialEq, Eq)]
-enum MoveDirection {
-    Up,
-    Down,
-    Left,
-    Right,
 }
