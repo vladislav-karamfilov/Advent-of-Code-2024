@@ -3,9 +3,9 @@ use std::{cmp::Reverse, collections::HashSet};
 use priority_queue::PriorityQueue;
 
 fn main() {
-    // solve_puzzle1(7, 12);
-    // solve_puzzle1(71, 1024);
-    // solve_puzzle2(7, 12);
+    solve_puzzle1(7, 12);
+    solve_puzzle1(71, 1024);
+    solve_puzzle2(7, 12);
     solve_puzzle2(71, 1024);
 }
 
@@ -69,25 +69,14 @@ fn calculate_min_steps_to_end(
 ) -> Option<u32> {
     let mut states = PriorityQueue::with_capacity(2 * memory_space_grid.len());
 
-    let mut initial_states = [
-        PathState {
-            coordinate: start,
-            move_direction: MoveDirection::Down,
-            steps: 0,
-            estimated_distance_to_end: 0,
-        },
-        PathState {
-            coordinate: start,
-            move_direction: MoveDirection::Right,
-            steps: 0,
-            estimated_distance_to_end: 0,
-        },
-    ];
+    let initial_state = PathState {
+        coordinate: start,
+        steps: 0,
+        estimated_distance_to_end: 0,
+    };
 
-    initial_states.iter_mut().for_each(|s| {
-        let state_score = s.get_score();
-        states.push(s.clone(), Reverse(state_score));
-    });
+    let initial_state_score = initial_state.get_score();
+    states.push(initial_state, Reverse(initial_state_score));
 
     let mut visited = HashSet::with_capacity(2 * memory_space_grid.len());
 
@@ -96,7 +85,7 @@ fn calculate_min_steps_to_end(
             return Some(current_state.steps);
         }
 
-        if !visited.insert((current_state.coordinate, current_state.move_direction)) {
+        if !visited.insert(current_state.coordinate) {
             continue;
         }
 
@@ -115,7 +104,7 @@ fn calculate_next_states(
     current_state: &PathState,
     end: Coordinate2D,
     memory_space_grid: &[Vec<char>],
-    visited: &HashSet<(Coordinate2D, MoveDirection)>,
+    visited: &HashSet<Coordinate2D>,
 ) -> Vec<PathState> {
     let mut result = Vec::with_capacity(4);
 
@@ -129,11 +118,10 @@ fn calculate_next_states(
         };
 
         if memory_space_grid[next_coordinate.y][next_coordinate.x] == '.'
-            && !visited.contains(&(next_coordinate, MoveDirection::Up))
+            && !visited.contains(&next_coordinate)
         {
             result.push(PathState {
                 coordinate: next_coordinate,
-                move_direction: MoveDirection::Up,
                 steps: new_steps,
                 estimated_distance_to_end: 0,
             });
@@ -147,11 +135,10 @@ fn calculate_next_states(
         };
 
         if memory_space_grid[next_coordinate.y][next_coordinate.x] == '.'
-            && !visited.contains(&(next_coordinate, MoveDirection::Down))
+            && !visited.contains(&next_coordinate)
         {
             result.push(PathState {
                 coordinate: next_coordinate,
-                move_direction: MoveDirection::Down,
                 steps: new_steps,
                 estimated_distance_to_end: 0,
             });
@@ -165,11 +152,10 @@ fn calculate_next_states(
         };
 
         if memory_space_grid[next_coordinate.y][next_coordinate.x] == '.'
-            && !visited.contains(&(next_coordinate, MoveDirection::Left))
+            && !visited.contains(&next_coordinate)
         {
             result.push(PathState {
                 coordinate: next_coordinate,
-                move_direction: MoveDirection::Left,
                 steps: new_steps,
                 estimated_distance_to_end: 0,
             });
@@ -183,11 +169,10 @@ fn calculate_next_states(
         };
 
         if memory_space_grid[next_coordinate.y][next_coordinate.x] == '.'
-            && !visited.contains(&(next_coordinate, MoveDirection::Right))
+            && !visited.contains(&next_coordinate)
         {
             result.push(PathState {
                 coordinate: next_coordinate,
-                move_direction: MoveDirection::Right,
                 steps: new_steps,
                 estimated_distance_to_end: 0,
             });
@@ -240,10 +225,9 @@ fn read_falling_byte_coordinates() -> Vec<Coordinate2D> {
     result
 }
 
-#[derive(Hash, PartialEq, Eq, Clone)]
+#[derive(Hash, PartialEq, Eq)]
 struct PathState {
     coordinate: Coordinate2D,
-    move_direction: MoveDirection,
     steps: u32,
     estimated_distance_to_end: u32,
 }
@@ -263,12 +247,4 @@ impl PathState {
 struct Coordinate2D {
     x: usize,
     y: usize,
-}
-
-#[derive(Clone, Copy, Hash, PartialEq, Eq)]
-enum MoveDirection {
-    Up,
-    Down,
-    Left,
-    Right,
 }
