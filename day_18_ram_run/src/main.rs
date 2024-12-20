@@ -151,7 +151,7 @@ fn calculate_next_states(
         {
             result.push(PathState {
                 coordinate: next_coordinate,
-                move_direction: MoveDirection::Up,
+                move_direction: MoveDirection::Down,
                 steps: new_steps,
                 estimated_distance_to_end: 0,
             });
