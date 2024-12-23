@@ -14,16 +14,22 @@ fn solve_puzzle2() {
 
     let mut max_price_sum = 0;
 
-    let changes_variations = iproduct!(-9_i8..10_i8, -9_i8..10_i8, -9_i8..10_i8, -9_i8..10_i8);
-    for changes_variation in changes_variations {
-        // Guess that the answer won't be in same number changes
-        if changes_variation.0 == changes_variation.1
-            && changes_variation.0 == changes_variation.2
-            && changes_variation.0 == changes_variation.3
-        {
-            continue;
-        }
+    let changes_variations = iproduct!(-9_i8..10_i8, -9_i8..10_i8, -9_i8..10_i8, -9_i8..10_i8)
+        .filter(|cv| {
+            // Guess that the answer won't be in same number changes
+            if cv.0 == cv.1 && cv.0 == cv.2 && cv.0 == cv.3 {
+                return false;
+            }
 
+            // Guess that the answer won't be with all non-positive changes
+            if cv.0 <= 0 && cv.1 <= 0 && cv.2 <= 0 && cv.3 <= 0 {
+                return false;
+            }
+
+            true
+        });
+
+    for changes_variation in changes_variations {
         let mut current_price_sum = 0;
         for prices_and_price_changes_for_buyer in prices_and_price_changes_for_buyers.iter() {
             current_price_sum += calculate_buyer_max_price_for_changes(
