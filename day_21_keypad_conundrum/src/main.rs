@@ -54,7 +54,7 @@ fn calculate_min_player_button_presses_for_door_code(
     );
 
     let mut possibilites_of_robot3_button_presses =
-        Vec::with_capacity(5 * possibilites_of_robot2_button_presses.len());
+        Vec::with_capacity(10 * possibilites_of_robot2_button_presses.len());
 
     for robot2_button_presses in possibilites_of_robot2_button_presses {
         let mut current_possibilites_of_robot3_button_presses = vec![];
