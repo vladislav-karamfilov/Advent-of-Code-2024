@@ -1,6 +1,5 @@
-use std::{sync::Arc, thread};
-
 use itertools::{iproduct, Itertools};
+use rayon::{iter::ParallelIterator, slice::ParallelSlice};
 
 fn main() {
     // solve_puzzle1();
@@ -14,60 +13,39 @@ fn solve_puzzle2() {
     let prices_and_price_changes_for_buyers =
         calculate_prices_and_price_changes_for_buyers(&initial_buyer_secret_numbers);
 
-    let prices_and_price_changes_for_buyers = Arc::new(prices_and_price_changes_for_buyers);
-
-    let changes_variations_chunks =
-        iproduct!(-9_i8..10_i8, -9_i8..10_i8, -9_i8..10_i8, -9_i8..10_i8)
-            .filter(|cv| {
-                // Guess that the answer won't be in same number changes
-                if cv.0 == cv.1 && cv.0 == cv.2 && cv.0 == cv.3 {
-                    return false;
-                }
-
-                // Guess that the answer won't be with all non-positive changes
-                if cv.0 <= 0 && cv.1 <= 0 && cv.2 <= 0 && cv.3 <= 0 {
-                    return false;
-                }
-
-                true
-            })
-            .chunks(10_000)
-            .into_iter()
-            .map(|ch| ch.collect::<Vec<_>>())
-            .collect::<Vec<_>>();
-
-    let mut thread_handles = vec![];
-
-    for changes_variations in changes_variations_chunks {
-        let thread_prices_and_price_changes_for_buyers =
-            prices_and_price_changes_for_buyers.clone();
-
-        let handle = thread::spawn(move || {
-            let mut max_price_sum = 0;
-
-            for changes_variation in changes_variations {
-                let current_price_sum = thread_prices_and_price_changes_for_buyers
-                    .iter()
-                    .map(|prices_and_price_changes_for_buyer| {
-                        calculate_buyer_max_price_for_changes(
-                            &prices_and_price_changes_for_buyer,
-                            changes_variation,
-                        ) as u16
-                    })
-                    .sum();
-
-                max_price_sum = max_price_sum.max(current_price_sum);
+    let max_price_sum = iproduct!(-9_i8..10_i8, -9_i8..10_i8, -9_i8..10_i8, -9_i8..10_i8)
+        .filter(|cv| {
+            // Guess that the answer won't be in same number changes
+            if cv.0 == cv.1 && cv.0 == cv.2 && cv.0 == cv.3 {
+                return false;
             }
 
-            max_price_sum
-        });
+            // Guess that the answer won't be with all non-positive changes
+            if cv.0 <= 0 && cv.1 <= 0 && cv.2 <= 0 && cv.3 <= 0 {
+                return false;
+            }
 
-        thread_handles.push(handle);
-    }
-
-    let max_price_sum = thread_handles
-        .into_iter()
-        .map(|h| h.join().unwrap())
+            true
+        })
+        .collect_vec()
+        .par_chunks(10_000)
+        .map(|changes_variations| {
+            changes_variations
+                .iter()
+                .map(|changes_variation| {
+                    prices_and_price_changes_for_buyers
+                        .iter()
+                        .map(|prices_and_price_changes_for_buyer| {
+                            calculate_buyer_max_price_for_changes(
+                                &prices_and_price_changes_for_buyer,
+                                *changes_variation,
+                            ) as u16
+                        })
+                        .sum::<u16>()
+                })
+                .max()
+                .unwrap()
+        })
         .max()
         .unwrap();
 

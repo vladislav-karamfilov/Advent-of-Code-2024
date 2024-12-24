@@ -23,7 +23,7 @@ fn get_output_number(wire_values: &HashMap<String, u8>) -> u64 {
         z_wire_counter += 1;
     }
 
-    let mut binary_str = String::new();
+    let mut binary_str = String::with_capacity(bits.len());
     while let Some(bit) = bits.pop() {
         binary_str.push((bit + b'0') as char);
     }
