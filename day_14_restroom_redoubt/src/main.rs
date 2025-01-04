@@ -6,6 +6,7 @@ fn main() {
     solve_puzzle2(100, 102);
 }
 
+// https://adventofcode.com/2024/day/14#part2
 #[allow(dead_code)]
 fn solve_puzzle2(max_x: i32, max_y: i32) {
     let mut robots = read_robots();
@@ -35,6 +36,7 @@ fn solve_puzzle2(max_x: i32, max_y: i32) {
     }
 }
 
+// https://adventofcode.com/2024/day/14
 #[allow(dead_code)]
 fn solve_puzzle1(max_x: i32, max_y: i32) {
     let mut robots = read_robots();

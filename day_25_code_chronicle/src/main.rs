@@ -2,6 +2,7 @@ fn main() {
     solve_puzzle1();
 }
 
+// https://adventofcode.com/2024/day/25
 fn solve_puzzle1() {
     let (pin_heights_of_locks, pin_heights_of_keys) = read_lock_pin_heights_and_key_pin_heights();
 

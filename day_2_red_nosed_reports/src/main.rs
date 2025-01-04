@@ -3,6 +3,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/2#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let mut safe_reports_count = 0;
@@ -39,6 +40,7 @@ fn solve_puzzle2() {
     println!("{safe_reports_count}");
 }
 
+// https://adventofcode.com/2024/day/2
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let mut safe_reports_count = 0;
@@ -70,8 +72,8 @@ fn solve_puzzle1() {
 
 fn is_safe_report(levels: &[i32], skip_level_index: i32) -> bool {
     let mut is_safe_report = true;
-    let mut is_increasing = Option::None;
-    let mut previous_level = Option::None;
+    let mut is_increasing = None;
+    let mut previous_level = None;
 
     for (curr_level_index, curr_level) in levels.iter().enumerate() {
         if curr_level_index as i32 == skip_level_index {
@@ -91,9 +93,9 @@ fn is_safe_report(levels: &[i32], skip_level_index: i32) -> bool {
                 }
                 None => {
                     if prev_level < curr_level && curr_level - prev_level <= 3 {
-                        is_increasing = Option::Some(true);
+                        is_increasing = Some(true);
                     } else if prev_level > curr_level && prev_level - curr_level <= 3 {
-                        is_increasing = Option::Some(false);
+                        is_increasing = Some(false);
                     } else {
                         is_safe_report = false;
                         break;
@@ -102,7 +104,7 @@ fn is_safe_report(levels: &[i32], skip_level_index: i32) -> bool {
             }
         }
 
-        previous_level = Option::Some(curr_level);
+        previous_level = Some(curr_level);
     }
 
     is_safe_report

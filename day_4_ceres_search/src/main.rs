@@ -3,6 +3,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/4#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let word_search = read_word_search();
@@ -21,6 +22,7 @@ fn solve_puzzle2() {
     println!("{result}");
 }
 
+// https://adventofcode.com/2024/day/4
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let word_search = read_word_search();

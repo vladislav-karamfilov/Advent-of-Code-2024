@@ -5,6 +5,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/19#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let (available_towel_patterns, designs) = read_available_towel_patterns_and_designs();
@@ -17,6 +18,7 @@ fn solve_puzzle2() {
     println!("{sum}");
 }
 
+// https://adventofcode.com/2024/day/19
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let (mut available_towel_patterns, designs) = read_available_towel_patterns_and_designs();

@@ -5,6 +5,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/12#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let garden_plots_map = read_garden_plots_map();
@@ -24,6 +25,7 @@ fn solve_puzzle2() {
     println!("{total_price_of_fencing}");
 }
 
+// https://adventofcode.com/2024/day/12
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let garden_plots_map = read_garden_plots_map();

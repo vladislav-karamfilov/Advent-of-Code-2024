@@ -6,6 +6,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/22#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let initial_buyer_secret_numbers = read_initial_secret_numbers();
@@ -52,6 +53,7 @@ fn solve_puzzle2() {
     println!("{max_price_sum}");
 }
 
+// https://adventofcode.com/2024/day/22
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let initial_secret_numbers = read_initial_secret_numbers();

@@ -10,6 +10,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/16#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let maze = read_maze();
@@ -44,6 +45,7 @@ fn solve_puzzle2() {
     }
 }
 
+// https://adventofcode.com/2024/day/16
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let maze = read_maze();

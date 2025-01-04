@@ -3,12 +3,13 @@ use std::{cmp::Reverse, collections::HashSet};
 use priority_queue::PriorityQueue;
 
 fn main() {
-    solve_puzzle1(7, 12);
-    solve_puzzle1(71, 1024);
-    solve_puzzle2(7, 12);
+    // solve_puzzle1(7, 12);
+    // solve_puzzle1(71, 1024);
+    // solve_puzzle2(7, 12);
     solve_puzzle2(71, 1024);
 }
 
+// https://adventofcode.com/2024/day/18#part2
 #[allow(dead_code)]
 fn solve_puzzle2(memory_space_grid_size: usize, initial_falling_bytes_to_respect: usize) {
     let falling_byte_coords = read_falling_byte_coordinates();
@@ -38,6 +39,7 @@ fn solve_puzzle2(memory_space_grid_size: usize, initial_falling_bytes_to_respect
     }
 }
 
+// https://adventofcode.com/2024/day/18
 #[allow(dead_code)]
 fn solve_puzzle1(memory_space_grid_size: usize, falling_bytes_to_respect: usize) {
     let falling_byte_coords = read_falling_byte_coordinates();

@@ -5,6 +5,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/6#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let mut map = read_map();
@@ -33,6 +34,7 @@ fn solve_puzzle2() {
     println!("{count}");
 }
 
+// https://adventofcode.com/2024/day/6
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let map = read_map();

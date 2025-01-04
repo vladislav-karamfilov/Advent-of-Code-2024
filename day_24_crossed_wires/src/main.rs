@@ -4,6 +4,7 @@ fn main() {
     solve_puzzle1();
 }
 
+// https://adventofcode.com/2024/day/24
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let (mut wire_values, gate_connections) = read_initial_wire_values_and_gate_connections();

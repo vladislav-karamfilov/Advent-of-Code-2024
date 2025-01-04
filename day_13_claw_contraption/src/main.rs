@@ -7,6 +7,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/13#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let button_move_vectors_and_prize_coords = read_button_move_vectors_and_prize_coords();
@@ -30,6 +31,7 @@ fn solve_puzzle2() {
     println!("{total_cost}");
 }
 
+// https://adventofcode.com/2024/day/13
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let button_move_vectors_and_prize_coords = read_button_move_vectors_and_prize_coords();

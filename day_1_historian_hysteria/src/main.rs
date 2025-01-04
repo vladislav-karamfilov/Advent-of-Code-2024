@@ -5,6 +5,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/1#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let (left_location_ids, right_location_ids) = read_location_ids_lists();
@@ -13,13 +14,15 @@ fn solve_puzzle2() {
 
     let mut total_similarity_score = 0;
     for left_location_id in left_location_ids.iter() {
-        let similarity_score = similarity_scores_cache.entry(left_location_id).or_insert(
-            left_location_id
-                * right_location_ids
-                    .iter()
-                    .filter(|rli| *rli == left_location_id)
-                    .count() as i32,
-        );
+        let similarity_score = similarity_scores_cache
+            .entry(left_location_id)
+            .or_insert_with(|| {
+                left_location_id
+                    * right_location_ids
+                        .iter()
+                        .filter(|rli| *rli == left_location_id)
+                        .count() as i32
+            });
 
         total_similarity_score += *similarity_score;
     }
@@ -27,6 +30,7 @@ fn solve_puzzle2() {
     println!("{total_similarity_score}");
 }
 
+// https://adventofcode.com/2024/day/1
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let (mut left_location_ids, mut right_location_ids) = read_location_ids_lists();

@@ -5,6 +5,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/11#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let stones = read_stones();
@@ -23,6 +24,7 @@ fn solve_puzzle2() {
     println!("{count}");
 }
 
+// https://adventofcode.com/2024/day/11
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let mut stones = read_stones();

@@ -5,6 +5,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/10#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let topographic_map = read_topographic_map();
@@ -25,6 +26,7 @@ fn solve_puzzle2() {
     println!("{sum}");
 }
 
+// https://adventofcode.com/2024/day/10
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let topographic_map = read_topographic_map();

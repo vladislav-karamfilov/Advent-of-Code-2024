@@ -5,6 +5,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/5#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let (page_ordering_rules, mut page_number_updates) =
@@ -36,6 +37,7 @@ fn solve_puzzle2() {
     println!("{result}");
 }
 
+// https://adventofcode.com/2024/day/5
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let (page_ordering_rules, page_number_updates) =

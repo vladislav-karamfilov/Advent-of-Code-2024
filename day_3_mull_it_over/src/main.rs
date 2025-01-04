@@ -5,6 +5,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/3#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let mut result = 0;
@@ -44,6 +45,7 @@ fn solve_puzzle2() {
     println!("{result}");
 }
 
+// https://adventofcode.com/2024/day/3
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let program_memory = read_program_memory();

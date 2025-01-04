@@ -5,6 +5,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/15#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let (warehouse_map, robot_movements) = read_warehouse_map_and_robot_movements();
@@ -18,6 +19,7 @@ fn solve_puzzle2() {
     println!("{sum_of_coordinates}");
 }
 
+// https://adventofcode.com/2024/day/15
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let (mut warehouse_map, robot_movements) = read_warehouse_map_and_robot_movements();

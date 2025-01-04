@@ -3,6 +3,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/9#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let (files, free_space_blocks) = read_files_and_free_space_blocks();
@@ -15,6 +16,7 @@ fn solve_puzzle2() {
     println!("{checksum}");
 }
 
+// https://adventofcode.com/2024/day/9
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let (files, free_space_blocks) = read_files_and_free_space_blocks();

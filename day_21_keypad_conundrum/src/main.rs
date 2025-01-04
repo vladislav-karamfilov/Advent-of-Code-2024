@@ -6,6 +6,7 @@ fn main() {
     solve_puzzle1();
 }
 
+// https://adventofcode.com/2024/day/21
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let door_codes = read_door_codes();

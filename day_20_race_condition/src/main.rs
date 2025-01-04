@@ -7,6 +7,7 @@ fn main() {
     solve_puzzle1(100);
 }
 
+// https://adventofcode.com/2024/day/20
 #[allow(dead_code)]
 fn solve_puzzle1(min_saved_picoseconds: u32) {
     let mut racetrack_map = read_racetrack_map();

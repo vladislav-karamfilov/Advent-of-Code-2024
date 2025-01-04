@@ -5,6 +5,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/8#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let (antennas_map, max_row, max_col) = read_antennas_map_and_max_row_and_max_col();
@@ -33,6 +34,7 @@ fn solve_puzzle2() {
     println!("{}", antinode_coords.len());
 }
 
+// https://adventofcode.com/2024/day/8
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let (antennas_map, max_row, max_col) = read_antennas_map_and_max_row_and_max_col();

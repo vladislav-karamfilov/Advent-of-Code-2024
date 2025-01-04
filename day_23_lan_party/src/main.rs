@@ -7,6 +7,7 @@ fn main() {
     solve_puzzle2();
 }
 
+// https://adventofcode.com/2024/day/23#part2
 #[allow(dead_code)]
 fn solve_puzzle2() {
     let computer_network = read_computer_network();
@@ -17,6 +18,7 @@ fn solve_puzzle2() {
     }
 }
 
+// https://adventofcode.com/2024/day/23
 #[allow(dead_code)]
 fn solve_puzzle1() {
     let computer_network = read_computer_network();
